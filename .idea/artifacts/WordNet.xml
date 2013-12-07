@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact build-on-make="true" name="WordNet">
+    <output-path>$PROJECT_DIR$/out/artifacts/WordNet</output-path>
+    <root id="root" />
+  </artifact>
+</component>
