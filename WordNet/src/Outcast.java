@@ -14,15 +14,15 @@ public class Outcast {
     public String outcast(String[] nouns) {
         int maxLength = 0;
         String maxString = null;
-        for(String noun1: nouns) {
+        for (String noun1 : nouns) {
             int disNous1 = 0;
-            for(String noun2: nouns) {
-                if(noun1.equals(noun2)) continue;
+            for (String noun2 : nouns) {
+                if (noun1.equals(noun2)) continue;
                 //System.out.println(noun1+"->"+noun2+" distance accum = " + disNous1);
                 disNous1 += wordnet.distance(noun1, noun2);
             }
             //System.out.print(noun1+":"+disNous1);
-            if(maxLength < disNous1) {
+            if (maxLength < disNous1) {
                 maxLength = disNous1;
                 maxString = noun1;
             }
@@ -37,7 +37,7 @@ public class Outcast {
         for (int t = 2; t < args.length; t++) {
             @SuppressWarnings("deprecation")
             String[] nouns = In.readStrings(args[t]);
-            StdOut.println(args[t] + ": " + outcast.outcast(nouns));
+            System.out.println(args[t] + ": " + outcast.outcast(nouns));
         }
     }
 }
