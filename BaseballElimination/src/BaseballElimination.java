@@ -7,7 +7,7 @@ import java.util.Iterator;
  */
 public class BaseballElimination {
 
-    private FlowNetwork stFlow = null;
+    //private FlowNetwork stFlow = null;
     private int N; //number of teams
     private int win[] = null;
     private int lose[] = null;
@@ -40,10 +40,11 @@ public class BaseballElimination {
     }
 
 
-    private void constructFlow(String team) {
+    private FlowNetwork constructFlow(String team) {
+        FlowNetwork stFlow = null;
         int teamNum = this.teams.indexOf((String)team);
         int nodeNum = N - 1  + (N-1)*(N-2)/2 + 2; //vertices s and t, game vertices 1 for C(4,2), team vertices for N-1
-        this.stFlow = new FlowNetwork(nodeNum);
+        stFlow = new FlowNetwork(nodeNum);
         int index = 0;
         //stFlow[0]: s stFlow[Max-1]: t (source and sink)
         //stFlow[1 to (N-1)*(N-2)/2)]: team vs team other than team x (game vertices)
@@ -69,7 +70,7 @@ public class BaseballElimination {
             stFlow.addEdge(edge);
         }
 
-
+        return stFlow;
     }
 
     private int skipSpace(String[] datas, int curIndex) {
@@ -117,24 +118,28 @@ public class BaseballElimination {
     // number of wins for given team
     public              int wins(String team) {
         int i = teams.indexOf((String)team);
+        if(i == -1) throw new IllegalArgumentException();
         return win[i];
     }
 
     // number of losses for given team
     public              int losses(String team) {
         int i = teams.indexOf((String)team);
+        if(i == -1) throw new IllegalArgumentException();
         return lose[i];
     }
 
     // number of remaining games for given team
     public              int remaining(String team) {
         int i = teams.indexOf((String)team);
+        if(i == -1) throw new IllegalArgumentException();
         return rest[i];
     }
 
     public              int against(String team1, String team2) {
         int i = teams.indexOf((String)team1);
         int j = teams.indexOf((String)team2);
+        if(i == -1 || j == -1) throw new IllegalArgumentException();
         return relation[i][j];
     }
 
@@ -149,6 +154,7 @@ public class BaseballElimination {
     // is given team eliminated?
     public          boolean isEliminated(String team) {
         int index = teams.indexOf((String)team);
+        if(-1 == index) throw new IllegalArgumentException();
         int potential = win[index] + rest[index];
         if(isTrivial(index) != -1) return true; //Trivial elimination
         int mutualMatch = 0;
@@ -161,7 +167,7 @@ public class BaseballElimination {
             }
         }
 
-        constructFlow(team);
+        FlowNetwork stFlow = constructFlow(team);
         FordFulkerson ff = new FordFulkerson(stFlow, 0 , stFlow.V() - 1);
         double maxFlow = ff.value();
 
@@ -177,20 +183,21 @@ public class BaseballElimination {
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
         int index = teams.indexOf((String)team);
+        if(-1 == index) throw new IllegalArgumentException();
         ArrayList<String> certificate = new ArrayList<String>();
         int trivial = isTrivial(index);
         if(trivial != -1) { //Trivial elimination
             certificate.add(teams.get(trivial));
             return certificate;
         }
-        constructFlow(team);
+        FlowNetwork stFlow =  constructFlow(team);
         FordFulkerson ff = new FordFulkerson(stFlow, 0 , stFlow.V() - 1);
 //        for(int i = 0; i < stFlow.V(); i++) {
 //            System.out.println(i+":"+ff.inCut(i));
 //        }
 //        System.out.println("Max-flow:" + ff.value());
         for(int i = 1 + (N-1)*(N-2) / 2 , j = 0; i < stFlow.V(); i++, j++) {
-            if(ff.inCut(i)) certificate.add(teams.get( j ));
+            if(ff.inCut(i)) certificate.add(teams.get( (j >= index)?j+1:j )); //target team has been skipped, have to add cursor back
         }
 
         if(certificate.size() == 0) return null;
