@@ -10,15 +10,15 @@ import java.util.TreeSet;
 
 public class BoggleSolver
 {
-    private MyTST<String> dict;
+    private ModifiedTrieST dict;
     //BoggleBoard board;
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
     public BoggleSolver(String[] dictionary) {
         //this.dictionary = dictionary;
-        dict = new MyTST();
+        dict = new ModifiedTrieST();
         for(int i = 0; i < dictionary.length; i++) {
-            this.dict.put(dictionary[i], new String(""+i));
+            this.dict.put(dictionary[i]);
         }
     }
 
@@ -51,15 +51,30 @@ public class BoggleSolver
         }
 
         String curWord = new String(substring, 0, (ch == 'Q')?(index + 2):(index + 1));
+
+        /*****************************************************
+         * DO NOT USER contains method of TrieST and use hasPrefix
+         * Because contains will search ST for once and hasPrefix
+         * will search ST again. It will be twice searching if contains and hasPrefix
+         * both called.
+         */
+
         //System.out.println(curWord);
-        if(dict.contains(curWord) ) {
-            if(curWord.length() >= 3) {
-                result.add(curWord);
-                //System.out.println(curWord);
-            }
+//        if(dict.contains(curWord) ) {
+//            if(curWord.length() >= 3) {
+//                result.add(curWord);
+//                //System.out.println(curWord);
+//            }
+//        }
+        //System.out.println("testing:" + curWord);
+        //if(ch != substring[(index == 0) ? 0 : (index - 1)])
+        int flag = dict.hasPrefix(curWord);
+            //if(!dict.hasPrefix(curWord))
+        if(flag == -1) return;
+        if(flag == 0) {
+            if(curWord.length() >= 3) { result.add(curWord); }
         }
-        System.out.println("testing:" + curWord);
-        if(!dict.hasPrefixMatch(curWord)) return;
+
 
         int nextLevel = (ch == 'Q')?(index + 2):(index + 1);
 
@@ -92,16 +107,21 @@ public class BoggleSolver
 
     public static void main(String[] args)
     {
+        long time1 = System.currentTimeMillis();
         In in = new In(args[0]);
         String[] dictionary = in.readAllStrings();
         BoggleSolver solver = new BoggleSolver(dictionary);
         BoggleBoard board = new BoggleBoard(args[1]);
         int score = 0;
+//        String word = "SIT";
+//        System.out.println(solver.dict.contains(word));
+//        System.out.println(solver.dict.hasPrefix(word));
         for (String word : solver.getAllValidWords(board))
     {
-        StdOut.println(word);
+        //StdOut.println(word);
         score += solver.scoreOf(word);
     }
         StdOut.println("Score = " + score);
-    }
+        System.out.println(System.currentTimeMillis() - time1);
+   }
 }
